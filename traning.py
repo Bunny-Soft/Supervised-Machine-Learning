@@ -1,4 +1,5 @@
 import subprocess
+import pyscreenshot as ImageGrab
 import shutil
 import wx
 
@@ -23,8 +24,7 @@ class MainWindow(wx.Frame):
 		self.record_panel = wx.Panel(self)
 
 		# Images
-		img = ImageGrab.grab(bbox=(10,10,500,500))
-
+		img = wx.Image(320,240)
 		self.image_widget = wx.StaticBitmap(self.img_panel, wx.ID_ANY, wx.Bitmap(img))
 
 		# Recording
@@ -56,7 +56,7 @@ class MainWindow(wx.Frame):
 			self.Destroy()
 
 if __name__ == '__main__':
-	#subprocess.Popen(['C:\\Program Files\\BizHawk\\EmuHawk.exe'])
+	subprocess.Popen(['C:\\Program Files\\BizHawk\\EmuHawk.exe'])
 	app = wx.App()
 	app.frame = MainWindow()
 	app.frame.Show()

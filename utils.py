@@ -22,13 +22,12 @@ def resize_image(img):
 
 
 class Screenshot(object):
-    SRC_W = 640
-    SRC_H = 480
+    SRC_W = 585
+    SRC_H = 455
     SRC_D = 3
 
     OFFSET_X = 0
-    OFFSET_Y = 0
-
+    OFFSET_Y = 65
 
 class Sample:
     IMG_W = 200
