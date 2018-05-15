@@ -1,63 +1,65 @@
-import subprocess
-import pyscreenshot as ImageGrab
-import shutil
-import wx
+import numpy as np
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Flatten
+from keras.layers import Conv2D
+from keras import optimizers
+from keras import backend as K
+from utils import Sample
 
-IDLE_SAMPLE_RATE = 1500
-SAMPLE_RATE = 200
+# Global variable
+OUT_SHAPE = 5
+INPUT_SHAPE = (Sample.IMG_H, Sample.IMG_W, Sample.IMG_D)
 
-class MainWindow(wx.Frame):
-	title = 'Data Acquisition'
 
-	def __init__(self):
-		wx.Frame.__init__(self, None, title=self.title, size=(660,330))
-		# Create GUI
-		self.create_main_panel()
+def customized_loss(y_true, y_pred, loss='euclidean'):
+    # Simply a mean squared error that penalizes large joystick summed values
+    if loss == 'L2':
+        L2_norm_cost = 0.001
+        val = K.mean(K.square((y_pred - y_true)), axis=-1) \
+                    + K.sum(K.square(y_pred), axis=-1)/2 * L2_norm_cost
+    # euclidean distance loss
+    elif loss == 'euclidean':
+        val = K.sqrt(K.sum(K.square(y_pred-y_true), axis=-1))
+    return val
 
-		self.recording = False
-		self.t = 0
 
-	def create_main_panel(self):
-		# Panels
-		self.img_panel = wx.Panel(self)
-		self.joy_panel = wx.Panel(self)
-		self.record_panel = wx.Panel(self)
+def create_model(keep_prob = 0.8):
+    model = Sequential()
 
-		# Images
-		img = wx.Image(320,240)
-		self.image_widget = wx.StaticBitmap(self.img_panel, wx.ID_ANY, wx.Bitmap(img))
+    # NVIDIA's model
+    model.add(Conv2D(24, kernel_size=(5, 5), strides=(2, 2), activation='relu', input_shape= INPUT_SHAPE))
+    model.add(Conv2D(36, kernel_size=(5, 5), strides=(2, 2), activation='relu'))
+    model.add(Conv2D(48, kernel_size=(5, 5), strides=(2, 2), activation='relu'))
+    model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
+    model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
+    model.add(Flatten())
+    model.add(Dense(1164, activation='relu'))
+    drop_out = 1 - keep_prob
+    model.add(Dropout(drop_out))
+    model.add(Dense(100, activation='relu'))
+    model.add(Dropout(drop_out))
+    model.add(Dense(50, activation='relu'))
+    model.add(Dropout(drop_out))
+    model.add(Dense(10, activation='relu'))
+    model.add(Dropout(drop_out))
+    model.add(Dense(OUT_SHAPE, activation='softsign'))
 
-		# Recording
-		self.txt_outputDir = wx.TextCtrl(self.record_panel, wx.ID_ANY, pos=(5,0), size=(320,30))
-		self.txt_outputDir.ChangeValue("samples/")
+    return model
 
-		self.btn_record = wx.Button(self.record_panel, wx.ID_ANY, label="Record", pos=(335,0), size=(100,30))
-
-		sizer = wx.BoxSizer(wx.HORIZONTAL)
-		sizer.Add(self.img_panel, 0, wx.ALL, 5)
-		sizer.Add(self.joy_panel, 0, wx.ALL, 5)
-
-		mainSizer_v = wx.BoxSizer(wx.VERTICAL)
-		mainSizer_v.Add(sizer, 0 , wx.ALL, 5)
-		mainSizer_v.Add(self.record_panel, 0 , wx.ALL, 5)
-
-		# finalize layout
-		self.SetAutoLayout(True)
-		self.SetSizer(mainSizer_v)
-		self.Layout()
-
-		def draw(self):
-			# Image
-			img = self.bmp.ConvertToImage()
-			img = img.Rescale(320,240)
-			self.image_widget.SetBitmap(img.ConvertToBitmap())
-
-		def on_exit(self, event):
-			self.Destroy()
 
 if __name__ == '__main__':
-	subprocess.Popen(['C:\\Program Files\\BizHawk\\EmuHawk.exe'])
-	app = wx.App()
-	app.frame = MainWindow()
-	app.frame.Show()
-	app.MainLoop()
+    # Load Training Data
+    x_train = np.load("data/X.npy")
+    y_train = np.load("data/y.npy")
+
+    print(x_train.shape[0], 'train samples')
+
+    # Training loop variables
+    epochs = 100
+    batch_size = 50
+
+    model = create_model()
+    model.compile(loss=customized_loss, optimizer=optimizers.adam())
+    model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, shuffle=True, validation_split=0.1)
+
+    model.save_weights('model_weights.h5')

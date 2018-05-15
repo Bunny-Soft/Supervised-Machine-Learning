@@ -75,7 +75,7 @@ class MainWindow():
         self.outputDirStrVar = tk.StringVar()
         self.txt_outputDir = tk.Entry(textframe, textvariable=self.outputDirStrVar, width=100)
         self.txt_outputDir.pack(side=tk.LEFT)
-        self.outputDirStrVar.set("samples/" + datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
+        self.outputDirStrVar.set("samples/" + datetime.now().strftime('%Y-%m-%d_%H_%M_%S'))
 
         self.record_button = ttk.Button(bottom_half, text="Record", command=self.on_btn_record)
         self.record_button.pack(side = tk.LEFT, padx=5)
@@ -143,11 +143,12 @@ class MainWindow():
         # Joystick
         x = np.asarray(self.plotData)
         self.axes.clear()
-        self.axes.plot(range(0,self.plotMem), x[:,0], 'r')
-        self.axes.plot(range(0,self.plotMem), x[:,1], 'b')
-        self.axes.plot(range(0,self.plotMem), x[:,2], 'g')
-        self.axes.plot(range(0,self.plotMem), x[:,3], 'k')
-        self.axes.plot(range(0,self.plotMem), x[:,4], 'y')
+        self.axes.plot(range(0,self.plotMem), x[:,0], 'r', label = 'x')
+        self.axes.plot(range(0,self.plotMem), x[:,1], 'b', label = 'y')
+        self.axes.plot(range(0,self.plotMem), x[:,2], 'g', label = 'a')
+        self.axes.plot(range(0,self.plotMem), x[:,3], 'k', label = 'b')
+        self.axes.plot(range(0,self.plotMem), x[:,4], 'y', label = 'rb')
+        self.axes.legend(loc='upper left')
         self.PlotCanvas.draw()
 
 
