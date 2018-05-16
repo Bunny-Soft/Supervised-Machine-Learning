@@ -1,9 +1,9 @@
 import numpy as np
 import subprocess
-import matplotlib
+import os
 import shutil
 import mss
-import os
+import matplotlib
 matplotlib.use('TkAgg')
 from datetime import datetime
 from matplotlib.figure import Figure
@@ -11,14 +11,25 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
 
 from PIL import ImageTk, Image
 
-import Tkinter as tk
-import ttk
-import tkMessageBox
+import sys
+
+PY3_OR_LATER = sys.version_info[0] >= 3
+
+if PY3_OR_LATER:
+    # Python 3 specific definitions
+    import tkinter as tk
+    import tkinter.ttk as ttk
+    import tkinter.messagebox as tkMessageBox
+else:
+    # Python 2 specific definitions
+    import Tkinter as tk
+    import ttk
+    import tkMessageBox
 
 from utils import Screenshot, XboxController
 
 IMAGE_SIZE = (320, 240)
-IDLE_SAMPLE_RATE = 1000
+IDLE_SAMPLE_RATE = 150
 SAMPLE_RATE = 150
 
 class MainWindow():
