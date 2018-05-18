@@ -7,7 +7,7 @@ from skimage.color import rgb2gray
 from skimage.transform import resize
 from skimage.io import imread
 import subprocess
-from training import create_model
+from train import create_model
 import numpy as np
 import keyboard
 sct = mss.mss()
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 		temp.save("temp.png")
 		image = imread("temp.png")
 		action = actor.get_action(image)
-		sleep(.05)
+		sleep(.3)
 		keyboard.release('right')
 		keyboard.release('left')
 		keyboard.release('up')
